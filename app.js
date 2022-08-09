@@ -4,13 +4,17 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
-var indexRouter = require("./routes/index");
+var productRouter = require("./routes/product");
+var cartRouter = require("./routes/cart");
+var transactionRouter = require("./routes/transaction");
+var userRouter = require("./routes/user");
 var usersRouter = require("./routes/users");
 
 mongoose.connect(
-  "mongodb+srv://root_admin:admin@cluster0.eptj9dj.mongodb.net/?retryWrites=true&w=majority"
-);
+  `mongodb+srv://${process.env.DBUSER}:${process.env.DBPASSW}@cluster0.eptj9dj.mongodb.net/?retryWrites=true&w=majority`
+).then(res => console.log('success')).catch(err => console.log('err'));
 
 var app = express();
 
@@ -25,7 +29,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
+app.use(`/api/v${process.env.API_VERSION}/product/`, productRouter);
+app.use(`/api/v${process.env.API_VERSION}/cart/`, cartRouter);
+app.use(`/api/v${process.env.API_VERSION}/transaction/`, transactionRouter);
+app.use(`/api/v${process.env.API_VERSION}/users/`, usersRouter);
+app.use(`/api/v${process.env.API_VERSION}/user/`, userRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
