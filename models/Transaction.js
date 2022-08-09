@@ -3,10 +3,12 @@ import mongoose, { Schema } from "mongoose";
 const transactionSchema = new Schema(
   {
     userId: { type: "ObjectId", ref: "User" },
-    totalPrice: Number,
+    transactionCode: String,
+    transactionDetail: String,
+    price: Number,
     type: String,
   },
-  { timestamps: { createdAt: "created_at" } }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Transaction", transactionSchema);

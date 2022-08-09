@@ -3,12 +3,12 @@ import mongoose, { Schema } from "mongoose";
 const productSchema = new Schema(
   {
     userId: { type: "ObjectId", ref: "User" },
-    image: [String],
+    image: [{ type: "ObjectId", ref: "ProductImage" }],
     description: String,
     price: Number,
     discountPrice: Number,
   },
-  { timestamps: { createdAt: "created_at" } }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Transaction", productSchema);

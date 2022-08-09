@@ -4,15 +4,24 @@ const userSchema = new Schema(
   {
     firstName: String,
     lastName: String,
-    email: String,
+    email: {
+      type: String,
+      required: true,
+    },
+    password: {
+      type: String,
+      min: [8, "Password min 8 characters"],
+      required: true,
+    },
     username: String,
+    avatar: String,
     address: String,
     province: Number,
     city: Number,
     zipCode: Number,
-    role: [Number],
+    role: [{ type: String, default: "user" }],
   },
-  { timestamps: { createdAt: "created_at" } }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Wallet", userSchema);
