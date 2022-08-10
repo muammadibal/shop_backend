@@ -9,10 +9,10 @@ const {
 var router = express.Router();
 
 /* GET users listing. */
-router.get("/product", getAllProduct);
-router.get("/product/:id", getProduct);
-router.post("/product", createProduct);
-router.put("/product/:id", updateProduct);
-router.delete("/product/:id", deleteProduct);
+router.get("/all", getAllProduct);
+router.get("/", getProduct);
+router.post("/", createProduct);
+router.put("/", updateProduct);
+router.delete("/", deleteProduct);
 
 module.exports = router;
