@@ -1,11 +1,12 @@
-import mongoose, { Schema } from "mongoose";
+const mongoose = require("mongoose");
+let Schema = mongoose.Schema;
 
 const productSchema = new Schema(
   {
-    userId: { type: "ObjectId", ref: "User" },
+    userId: { type: "ObjectId", ref: "User", required: true },
     image: [{ type: "ObjectId", ref: "ProductImage" }],
-    description: String,
-    price: Number,
+    description: { type: String, required: true },
+    price: { type: Number, required: true },
     discountPrice: Number,
   },
   { timestamps: true }
