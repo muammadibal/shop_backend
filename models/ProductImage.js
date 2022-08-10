@@ -1,4 +1,5 @@
-import mongoose, { Schema } from "mongoose";
+const mongoose = require("mongoose");
+let Schema = mongoose.Schema;
 
 const productImageSchema = new Schema({
   productId: { type: "ObjectId", ref: "Product" },
