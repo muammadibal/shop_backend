@@ -28,7 +28,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
 app.use(`/api/v${process.env.API_VERSION}/product/`, productRouter);
 app.use(`/api/v${process.env.API_VERSION}/cart/`, cartRouter);
 app.use(`/api/v${process.env.API_VERSION}/transaction/`, transactionRouter);
