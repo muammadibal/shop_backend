@@ -7,10 +7,10 @@ const productSchema = new Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    image: [{ type: "ObjectId", ref: "ProductImage" }],
+    imageId: [{ type: "ObjectId", ref: "ProductImage" }],
     discountPrice: Number,
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Transaction", productSchema);
+module.exports = mongoose.model("Product", productSchema);
