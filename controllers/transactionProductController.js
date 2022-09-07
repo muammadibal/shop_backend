@@ -4,18 +4,18 @@ module.exports = {
   getAllTransactionProduct: async (req, res, next) => {
     const { userId } = req.body;
     try {
-      const cart = await TransactionProduct.find({ userId: userId }).populate(
-        "userId productId"
-      );
+      const transaction = await TransactionProduct.find({
+        userId: userId,
+      }).populate("userId productId");
 
-      if (cart.length > 0) {
+      if (transaction.length > 0) {
         res.json({
-          message: "Get cart success",
-          data: cart,
+          message: "Get transaction success",
+          data: transaction,
         });
       } else {
         res.json({
-          message: "TransactionProduct not exists",
+          message: "Transaction not exists",
           data: null,
         });
       }
@@ -42,7 +42,7 @@ module.exports = {
         });
 
         res.json({
-          message: "Product added to cart",
+          message: "Transaction added",
           data: cart,
         });
       } else {
@@ -50,7 +50,7 @@ module.exports = {
         checkTransactionProduct.save();
 
         res.json({
-          message: "Product has been added",
+          message: "Transaction has been added",
           data: checkTransactionProduct,
         });
       }
@@ -78,7 +78,7 @@ module.exports = {
         });
 
         res.json({
-          message: "Product added to cart",
+          message: "Transaction added to cart",
           data: cart,
         });
       } else {
@@ -86,7 +86,7 @@ module.exports = {
         checkTransactionProduct.save();
 
         res.json({
-          message: "Product has been updated",
+          message: "Transaction has been updated",
           data: checkTransactionProduct,
         });
       }
@@ -105,12 +105,12 @@ module.exports = {
       if (cart) {
         cart.delete();
         res.json({
-          message: "Product deleted from cart",
+          message: "Transaction deleted",
           data: null,
         });
       } else {
         res.json({
-          message: "TransactionProduct not found",
+          message: "Transaction not found",
           data: null,
         });
       }
