@@ -1,5 +1,7 @@
 const Product = require("../models/Product");
 const ProductImage = require("../models/ProductImage");
+const fs = require("fs");
+const path = require("path");
 
 module.exports = {
   getAllProduct: async (req, res, next) => {
@@ -25,9 +27,16 @@ module.exports = {
     }
   },
   createProduct: async (req, res, next) => {
-    const { userId, title, image, description, price, discountPrice } =
-      req.body;
-    if (userId && description && price) {
+    const {
+      userId,
+      title,
+      images,
+      description,
+      price,
+      thumbnail,
+      discountPrice,
+    } = req.body;
+    try {
       const product = new Product();
 
       product.userId = userId;
@@ -36,91 +45,218 @@ module.exports = {
       product.price = price;
       product.discountPrice = discountPrice;
 
-      if (Array.isArray(image) && image?.length > 0) {
-        image?.map(async (img) => {
-          let imgId = await ProductImage.create({ image: img });
-          product.imageId.push({ _id: imgId._id.toString() });
-          await product.save();
-        });
+      if (thumbnail) {
+        let base64Img = thumbnail.split(";base64,")[1];
+        let fileName = `${
+          Date.now() + "-" + Math.round(Math.random() * 1e9)
+        }-thumbnail.jpg`;
 
-        let valProduct = await Product.findOne({
-          _id: product?._id.toString(),
-        }).populate({
-          path: "imageId",
-          select: "id image",
-        });
+        product.thumbnail = fileName;
 
-        console.log("valProduct", valProduct);
+        let pathImg =
+          path.join(__dirname, "./../public/images/products/") + fileName;
 
-        res.json({
-          message: "create product success",
-          data: valProduct,
-        });
-      } else {
-        product.save();
-
-        res.json({
-          message: "create product success",
-          data: product,
-        });
+        fs.writeFileSync(
+          pathImg,
+          base64Img,
+          { encoding: "base64" },
+          function (err) {
+            console.log("File created");
+          }
+        );
       }
-    } else {
+
+      await product.save();
+
+      if (Array.isArray(images) && images?.length > 0) {
+        await Promise.all(
+          images?.map(async (img) => {
+            let base64Img = img.split(";base64,")[1];
+            let fileName = `${
+              Date.now() + "-" + Math.round(Math.random() * 1e9)
+            }.jpg`;
+
+            let pathImg =
+              path.join(__dirname, "./../public/images/products/") + fileName;
+
+            fs.writeFileSync(
+              pathImg,
+              base64Img,
+              { encoding: "base64" },
+              function (err) {
+                console.log("File created");
+              }
+            );
+
+            await ProductImage.create({
+              imageUrl: fileName,
+              productId: product._id,
+            });
+          })
+        );
+      }
+
+      let productItem = await ProductImage.find({
+        productId: product._id.toString(),
+      });
+
+      let dataItem = {
+        _id: product.id,
+        userId: product.userId,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        isActive: product.isActive,
+        thumbnail: product.thumbnail,
+        images: productItem.map((i) => i.imageUrl),
+      };
+
       res.json({
-        message: "description and price cannot be empty",
+        message: "create product success",
+        data: dataItem,
+      });
+    } catch (error) {
+      res.json({
+        message: error?.message,
       });
     }
   },
   updateProduct: async (req, res, next) => {
-    const { id, title, image, description, price, discountPrice } = req.body;
+    const {
+      id,
+      title,
+      images,
+      description,
+      price,
+      thumbnail,
+      isActive,
+      userId,
+      discountPrice,
+    } = req.body;
+    try {
+      const productImage = await ProductImage.find({ productId: id });
+      const product = await Product.findOne({ _id: id });
+      product.userId = userId;
+      product.title = title;
+      product.description = description;
+      product.price = price;
+      product.isActive = isActive;
+      product.discountPrice = discountPrice;
 
-    const product = await Product.findOneAndUpdate(
-      { _id: id },
-      {
-        title: title,
-        description: description,
-        price: price,
-        discountPrice: discountPrice,
+      if (thumbnail) {
+        let pathImgDefault =
+          path.join(__dirname, "./../public/images/products/") +
+          product.thumbnail;
+        fs.unlinkSync(pathImgDefault);
+
+        let base64Img = thumbnail.split(";base64,")[1];
+        let fileName = `${
+          Date.now() + "-" + Math.round(Math.random() * 1e9)
+        }-thumbnail.jpg`;
+
+        product.thumbnail = fileName;
+
+        let pathImg =
+          path.join(__dirname, "./../public/images/products/") + fileName;
+
+        fs.writeFileSync(
+          pathImg,
+          base64Img,
+          { encoding: "base64" },
+          function (err) {
+            console.log("File created");
+          }
+        );
       }
-    );
 
-    // let imgs = [];
+      product.save();
 
-    if (Array.isArray(image) && image?.length > 0) {
-      image?.map(async (img) => {
-        await ProductImage.findOneAndUpdate({ productId: id }, { image: img });
+      if (Array.isArray(images) && images?.length > 0) {
+        productImage.map(async (item) => {
+          let pathImg =
+            path.join(__dirname, "./../public/images/products/") +
+            item.imageUrl;
+          fs.unlinkSync(pathImg);
+          await ProductImage.deleteMany({ productId: id });
+        });
 
-        // imgs.push(valProductImage)
+        await Promise.all(
+          images?.map(async (img) => {
+            let base64Img = img.split(";base64,")[1];
+            let fileName = `${
+              Date.now() + "-" + Math.round(Math.random() * 1e9)
+            }.jpg`;
+            let pathImg =
+              path.join(__dirname, "./../public/images/products/") + fileName;
+
+            fs.writeFileSync(
+              pathImg,
+              base64Img,
+              { encoding: "base64" },
+              function (err) {
+                console.log("File created");
+              }
+            );
+
+            await ProductImage.create({
+              imageUrl: fileName,
+              productId: id,
+            });
+          })
+        );
+      }
+
+      let productItem = await ProductImage.find({
+        productId: product._id.toString(),
       });
-    }
 
-    if (product) {
-      let imgs = await ProductImage.find({ productId: id });
+      let dataItem = {
+        _id: product.id,
+        userId: product.userId,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        thumbnail: product.thumbnail,
+        isActive: product.isActive,
+        images: productItem.map((i) => i.imageUrl),
+      };
 
       res.json({
         message: "update product success",
-        data: {
-          product,
-          image: imgs,
-        },
+        data: dataItem,
       });
-    } else {
+    } catch (error) {
       res.json({
-        message: "update product failed, not found",
+        message: error?.message,
       });
     }
   },
   deleteProduct: async (req, res, next) => {
     const { id } = req.body;
-    const product = await Product.findOne({ _id: id });
-    if (product) {
+    try {
+      const productImage = await ProductImage.find({ productId: id });
+      const product = await Product.findOne({ _id: id });
+
+      let pathImgDefault =
+        path.join(__dirname, "./../public/images/products/") +
+        product.thumbnail;
+      fs.unlinkSync(pathImgDefault);
+
+      productImage.map(async (item) => {
+        let pathImg =
+          path.join(__dirname, "./../public/images/products/") + item.imageUrl;
+        fs.unlinkSync(pathImg);
+        await ProductImage.deleteMany({ productId: id });
+      });
+
       product.delete();
       res.json({
         message: "delete product success",
         data: null,
       });
-    } else {
+    } catch (error) {
       res.json({
-        message: "delete product failed, not found",
+        message: error?.message,
         data: null,
       });
     }

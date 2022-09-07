@@ -7,7 +7,8 @@ const productSchema = new Schema(
     title: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true },
-    imageId: [{ type: "ObjectId", ref: "ProductImage" }],
+    thumbnail: { type: String, required: true },
+    isActive: { type: Number, required: true, default: 1 },
     discountPrice: Number,
   },
   { timestamps: true }
