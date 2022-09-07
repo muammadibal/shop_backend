@@ -1,4 +1,5 @@
-import mongoose, { Schema } from "mongoose";
+const mongoose = require("mongoose");
+let Schema = mongoose.Schema;
 
 const transactionProductSchema = new Schema(
   {

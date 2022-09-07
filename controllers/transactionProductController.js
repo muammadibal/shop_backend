@@ -1,10 +1,10 @@
-const Cart = require("../models/Cart");
+const TransactionProduct = require("../models/TransactionProduct");
 
 module.exports = {
-  getAllCart: async (req, res, next) => {
+  getAllTransactionProduct: async (req, res, next) => {
     const { userId } = req.body;
     try {
-      const cart = await Cart.find({ userId: userId }).populate(
+      const cart = await TransactionProduct.find({ userId: userId }).populate(
         "userId productId"
       );
 
@@ -15,7 +15,7 @@ module.exports = {
         });
       } else {
         res.json({
-          message: "Cart not exists",
+          message: "TransactionProduct not exists",
           data: null,
         });
       }
@@ -26,14 +26,17 @@ module.exports = {
       });
     }
   },
-  createCart: async (req, res, next) => {
+  createTransactionProduct: async (req, res, next) => {
     const { userId, productId } = req.body;
 
     try {
-      const checkCart = await Cart.findOne({ userId, productId });
+      const checkTransactionProduct = await TransactionProduct.findOne({
+        userId,
+        productId,
+      });
 
-      if (!checkCart) {
-        let cart = await Cart.create({
+      if (!checkTransactionProduct) {
+        let cart = await TransactionProduct.create({
           userId: userId,
           productId: productId,
         });
@@ -43,12 +46,12 @@ module.exports = {
           data: cart,
         });
       } else {
-        checkCart.quantity += 1;
-        checkCart.save();
+        checkTransactionProduct.quantity += 1;
+        checkTransactionProduct.save();
 
         res.json({
           message: "Product has been added",
-          data: checkCart,
+          data: checkTransactionProduct,
         });
       }
     } catch (error) {
@@ -58,14 +61,18 @@ module.exports = {
       });
     }
   },
-  updateCart: async (req, res, next) => {
+  updateTransactionProduct: async (req, res, next) => {
     const { id, userId, productId, quantity } = req.body;
 
     try {
-      const checkCart = await Cart.findOne({ _id: id, userId, productId });
+      const checkTransactionProduct = await TransactionProduct.findOne({
+        _id: id,
+        userId,
+        productId,
+      });
 
-      if (!checkCart) {
-        let cart = await Cart.create({
+      if (!checkTransactionProduct) {
+        let cart = await TransactionProduct.create({
           userId: userId,
           productId: productId,
         });
@@ -75,12 +82,12 @@ module.exports = {
           data: cart,
         });
       } else {
-        checkCart.quantity = quantity;
-        checkCart.save();
+        checkTransactionProduct.quantity = quantity;
+        checkTransactionProduct.save();
 
         res.json({
           message: "Product has been updated",
-          data: checkCart,
+          data: checkTransactionProduct,
         });
       }
     } catch (error) {
@@ -90,10 +97,10 @@ module.exports = {
       });
     }
   },
-  deleteCart: async (req, res, next) => {
+  deleteTransactionProduct: async (req, res, next) => {
     const { id } = req.body;
     try {
-      const cart = await Cart.findOne({ _id: id });
+      const cart = await TransactionProduct.findOne({ _id: id });
 
       if (cart) {
         cart.delete();
@@ -103,7 +110,7 @@ module.exports = {
         });
       } else {
         res.json({
-          message: "Cart not found",
+          message: "TransactionProduct not found",
           data: null,
         });
       }
