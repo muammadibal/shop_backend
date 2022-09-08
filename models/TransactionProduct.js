@@ -5,8 +5,9 @@ const transactionProductSchema = new Schema(
   {
     userId: { type: "ObjectId", ref: "User", required: true },
     transactionCode: { type: String, required: true },
-    productId: [{ type: "ObjectId", ref: "Product", required: true }],
     transactionPrice: { type: Number, required: true },
+    transactionStatus: { type: String, required: true, default: "pending" },
+    transactionStatus: { type: String, default: "" },
   },
   { timestamps: true }
 );

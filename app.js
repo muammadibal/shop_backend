@@ -42,7 +42,7 @@ app.use(
 
 app.use(`/api/v${process.env.API_VERSION}/product/`, productRouter);
 app.use(`/api/v${process.env.API_VERSION}/cart/`, cartRouter);
-app.use(`/api/v${process.env.API_VERSION}/transaction/`, transactionRouter);
+app.use(`/api/v${process.env.API_VERSION}/checkout/`, transactionRouter);
 app.use(`/api/v${process.env.API_VERSION}/users/`, usersRouter);
 app.use(`/api/v${process.env.API_VERSION}/user/`, userRouter);
 

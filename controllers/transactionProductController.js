@@ -1,17 +1,44 @@
 const TransactionProduct = require("../models/TransactionProduct");
+const TransactionProductDetail = require("../models/TransactionProductDetail");
+const Cart = require("../models/Cart");
 
 module.exports = {
   getAllTransactionProduct: async (req, res, next) => {
     const { userId } = req.body;
     try {
-      const transaction = await TransactionProduct.find({
-        userId: userId,
-      }).populate("userId productId");
+      const transaction = await TransactionProduct.find({ userId });
+      // .populate(
+      //   "transactionId"
+      // );
 
-      if (transaction.length > 0) {
+      res.json({
+        message: "Get transaction success",
+        data: transaction,
+      });
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null,
+      });
+    }
+  },
+  getTransactionProduct: async (req, res, next) => {
+    const { id } = req.body;
+    try {
+      const transaction = await TransactionProduct.findOne({
+        _id: id,
+      }).populate("userId");
+      const transactionDetail = await TransactionProductDetail.find({
+        transactionId: id,
+      }).populate("productId");
+
+      if (transaction) {
         res.json({
           message: "Get transaction success",
-          data: transaction,
+          data: {
+            transaction,
+            transactionDetail,
+          },
         });
       } else {
         res.json({
@@ -27,69 +54,61 @@ module.exports = {
     }
   },
   createTransactionProduct: async (req, res, next) => {
-    const { userId, productId } = req.body;
+    const { carts, userId, transactionCode, transactionPrice } = req.body;
 
     try {
-      const checkTransactionProduct = await TransactionProduct.findOne({
+      let products = [];
+      await Promise.all(
+        carts?.map(async (valCart) => {
+          let cart = await Cart.findOne({ _id: valCart.id }).populate(
+            "productId"
+          );
+          if (parseInt(cart?.productId?.stock) >= parseInt(valCart.quantity)) {
+            products.push(cart);
+          } else {
+            throw new Error(`Stock tidak mencukupi`);
+          }
+        })
+      );
+
+      let transaction = await TransactionProduct.create({
         userId,
-        productId,
+        transactionCode,
+        transactionPrice,
       });
 
-      if (!checkTransactionProduct) {
-        let cart = await TransactionProduct.create({
-          userId: userId,
-          productId: productId,
-        });
+      await Promise.all(
+        products?.map(async (valProduct) => {
+          await TransactionProductDetail.create({
+            transactionId: transaction.id,
+            productId: valProduct?.productId?._id,
+            productName: valProduct?.productId?.title,
+            productPrice: valProduct?.productId?.price,
+            productThumbnail: valProduct?.productId?.thumbnail,
+            discountType: valProduct?.productId?.discountType,
+            discountAmount: valProduct?.productId?.discountAmount,
+            quantity: valProduct?.quantity,
+          });
+        })
+      );
 
-        res.json({
-          message: "Transaction added",
-          data: cart,
-        });
-      } else {
-        checkTransactionProduct.quantity += 1;
-        checkTransactionProduct.save();
+      await Promise.all(
+        carts?.map(async (valCart) => {
+          await Cart.findOneAndDelete({ _id: valCart.id });
+        })
+      );
 
-        res.json({
-          message: "Transaction has been added",
-          data: checkTransactionProduct,
-        });
-      }
-    } catch (error) {
+      let transactionData = await TransactionProductDetail.find({
+        transactionId: transaction.id,
+      }); //.populate("transactionId");
+
       res.json({
-        message: error?.message,
-        data: null,
+        message: "Transaction added",
+        data: {
+          transaction,
+          transactionData,
+        },
       });
-    }
-  },
-  updateTransactionProduct: async (req, res, next) => {
-    const { id, userId, productId, quantity } = req.body;
-
-    try {
-      const checkTransactionProduct = await TransactionProduct.findOne({
-        _id: id,
-        userId,
-        productId,
-      });
-
-      if (!checkTransactionProduct) {
-        let cart = await TransactionProduct.create({
-          userId: userId,
-          productId: productId,
-        });
-
-        res.json({
-          message: "Transaction added to cart",
-          data: cart,
-        });
-      } else {
-        checkTransactionProduct.quantity = quantity;
-        checkTransactionProduct.save();
-
-        res.json({
-          message: "Transaction has been updated",
-          data: checkTransactionProduct,
-        });
-      }
     } catch (error) {
       res.json({
         message: error?.message,
@@ -100,10 +119,16 @@ module.exports = {
   deleteTransactionProduct: async (req, res, next) => {
     const { id } = req.body;
     try {
-      const cart = await TransactionProduct.findOne({ _id: id });
+      const transaction = await TransactionProduct.findOneAndDelete({
+        _id: id,
+      });
+      const transactionDetail = await TransactionProductDetail.findOneAndDelete(
+        { transactionId: id }
+      );
 
-      if (cart) {
-        cart.delete();
+      if (transaction) {
+        transaction.delete();
+        transactionDetail && transactionDetail.delete();
         res.json({
           message: "Transaction deleted",
           data: null,
