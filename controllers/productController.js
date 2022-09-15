@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const ProductImage = require("../models/ProductImage");
 const ProductCategory = require("../models/ProductCategory");
+const ProductLog = require("../models/ProductLog");
 const fs = require("fs");
 const path = require("path");
 
@@ -13,11 +14,18 @@ module.exports = {
     });
   },
   getProduct: async (req, res, next) => {
-    const { id } = req.body;
+    const { id, userId } = req.body;
     const product = await Product.findOne({ _id: id }).populate(
       "productCategoryId"
     );
     if (product) {
+      const productLog = new ProductLog();
+      productLog.activity = "view";
+      productLog.categoryId = product.productCategoryId.id;
+      productLog.productId = product.id;
+      productLog.userId = userId;
+      productLog.save();
+
       res.json({
         message: "get product success",
         data: product,

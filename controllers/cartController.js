@@ -1,4 +1,6 @@
 const Cart = require("../models/Cart");
+const Product = require("../models/Product");
+const ProductLog = require("../models/ProductLog");
 
 module.exports = {
   getAllCart: async (req, res, next) => {
@@ -27,7 +29,7 @@ module.exports = {
     }
   },
   createCart: async (req, res, next) => {
-    const { userId, productId } = req.body;
+    const { userId, productId, productCategoryId } = req.body;
 
     try {
       const checkCart = await Cart.findOne({ userId, productId });
@@ -37,6 +39,13 @@ module.exports = {
           userId: userId,
           productId: productId,
         });
+
+        const productLog = new ProductLog();
+        productLog.activity = "cart";
+        productLog.categoryId = productCategoryId;
+        productLog.productId = productId;
+        productLog.userId = userId;
+        productLog.save();
 
         res.json({
           message: "Product added to cart",

@@ -16,8 +16,8 @@ const productSchema = new Schema(
     thumbnail: { type: String, required: true },
     isActive: { type: Number, required: true, default: 1 },
     stock: { type: Number, required: true, default: 1 },
-    discountType: { type: String, required: true, default: "disable" },
-    discountAmount: { type: Number, required: true, default: 0 },
+    discountType: { type: String, default: "disable" },
+    discountAmount: { type: Number, default: 0 },
     selled: { type: Number, required: true, default: 0 },
   },
   { timestamps: true }

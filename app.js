@@ -12,6 +12,7 @@ var cartRouter = require("./routes/cart");
 var transactionRouter = require("./routes/transaction");
 var userRouter = require("./routes/user");
 var usersRouter = require("./routes/users");
+var productLogRouter = require("./routes/productLog");
 
 mongoose
   .connect(
@@ -46,6 +47,7 @@ app.use(
   `/api/v${process.env.API_VERSION}/product/category`,
   productCategoryRouter
 );
+app.use(`/api/v${process.env.API_VERSION}/product/`, productLogRouter);
 app.use(`/api/v${process.env.API_VERSION}/cart/`, cartRouter);
 app.use(`/api/v${process.env.API_VERSION}/checkout/`, transactionRouter);
 app.use(`/api/v${process.env.API_VERSION}/users/`, usersRouter);

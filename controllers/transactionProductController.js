@@ -2,6 +2,7 @@ const TransactionProduct = require("../models/TransactionProduct");
 const TransactionProductDetail = require("../models/TransactionProductDetail");
 const Cart = require("../models/Cart");
 const Product = require("../models/Product");
+const ProductLog = require("../models/ProductLog");
 
 module.exports = {
   getAllTransactionProduct: async (req, res, next) => {
@@ -90,6 +91,13 @@ module.exports = {
             discountAmount: valProduct?.productId?.discountAmount,
             quantity: valProduct?.quantity,
           });
+
+          const productLog = new ProductLog();
+          productLog.activity = "checkout";
+          productLog.categoryId = valProduct?.productId?.productCategoryId;
+          productLog.productId = valProduct?.productId?._id;
+          productLog.userId = userId;
+          productLog.save();
         })
       );
 
