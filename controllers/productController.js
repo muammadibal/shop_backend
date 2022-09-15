@@ -43,7 +43,7 @@ module.exports = {
       product.title = title;
       product.description = description;
       product.price = price;
-      product.discountPrice = discountPrice;
+      product.discountAmount = discountPrice;
 
       if (thumbnail) {
         let base64Img = thumbnail.split(";base64,")[1];
@@ -141,7 +141,7 @@ module.exports = {
       product.description = description;
       product.price = price;
       product.isActive = isActive;
-      product.discountPrice = discountPrice;
+      product.discountAmount = discountPrice;
 
       if (thumbnail) {
         let pathImgDefault =

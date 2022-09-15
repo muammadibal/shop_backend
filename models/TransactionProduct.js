@@ -7,7 +7,7 @@ const transactionProductSchema = new Schema(
     transactionCode: { type: String, required: true },
     transactionPrice: { type: Number, required: true },
     transactionStatus: { type: String, required: true, default: "pending" },
-    transactionStatus: { type: String, default: "" },
+    transactionTracking: { type: String, default: "" },
   },
   { timestamps: true }
 );
