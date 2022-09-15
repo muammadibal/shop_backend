@@ -7,6 +7,7 @@ var bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 require("dotenv").config();
 var productRouter = require("./routes/product");
+var productCategoryRouter = require("./routes/productCategory");
 var cartRouter = require("./routes/cart");
 var transactionRouter = require("./routes/transaction");
 var userRouter = require("./routes/user");
@@ -41,6 +42,10 @@ app.use(
 );
 
 app.use(`/api/v${process.env.API_VERSION}/product/`, productRouter);
+app.use(
+  `/api/v${process.env.API_VERSION}/product/category`,
+  productCategoryRouter
+);
 app.use(`/api/v${process.env.API_VERSION}/cart/`, cartRouter);
 app.use(`/api/v${process.env.API_VERSION}/checkout/`, transactionRouter);
 app.use(`/api/v${process.env.API_VERSION}/users/`, usersRouter);
