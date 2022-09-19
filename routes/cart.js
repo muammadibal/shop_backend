@@ -1,11 +1,16 @@
-var express = require('express');
+var express = require("express");
 var router = express.Router();
+const {
+  createCart,
+  getAllCart,
+  updateCart,
+  deleteCart,
+} = require("../controllers/cartController");
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.json({
-    message: "success"
-  });
-});
+router.get("/", getAllCart);
+router.post("/", createCart);
+router.put("/", updateCart);
+router.delete("/", deleteCart);
 
 module.exports = router;

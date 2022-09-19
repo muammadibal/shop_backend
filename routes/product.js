@@ -1,11 +1,18 @@
-var express = require('express');
+var express = require("express");
+const {
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getAllProduct,
+} = require("../controllers/productController");
 var router = express.Router();
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
-  res.json({
-    message: "success"
-  });
-});
+router.get("/all", getAllProduct);
+router.get("/", getProduct);
+router.post("/", createProduct);
+router.put("/", updateProduct);
+router.delete("/", deleteProduct);
 
 module.exports = router;
