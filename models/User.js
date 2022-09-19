@@ -22,16 +22,18 @@ const userSchema = new Schema(
     province: Number,
     city: Number,
     zipCode: Number,
+    resetPasswordToken: String,
+    resetPasswordToken: Date,
     userType: { type: String, default: "user" },
   },
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
-  const user = this;
-  if (user.isModified("password")) {
-    user.password = await bcrypt.hash(user.password, 8);
-  }
-});
+// userSchema.pre("save", async function (next) {
+//   const user = this;
+//   if (user.isModified("password")) {
+//     user.password = await bcrypt.hash(user.password, 8);
+//   }
+// });
 
 module.exports = mongoose.model("User", userSchema);
