@@ -5,6 +5,7 @@ const cartSchema = new Schema(
   {
     userId: { type: "ObjectId", ref: "User" },
     productId: { type: "ObjectId", ref: "Product" },
+    quantity: { type: Number, default: 1 },
   },
   { timestamps: true }
 );

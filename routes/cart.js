@@ -1,11 +1,18 @@
 var express = require("express");
 var router = express.Router();
-const { createCart, getAllCart } = require("../controllers/cartController");
 const { withJWTAuthMiddleware } = require("express-kun");
+const {
+  createCart,
+  getAllCart,
+  updateCart,
+  deleteCart,
+} = require("../controllers/cartController");
 
 const protectedRouter = withJWTAuthMiddleware(router, process.env.JWT_SECRET);
-/* GET users listing. */
+
 protectedRouter.get("/", getAllCart);
 protectedRouter.post("/", createCart);
+protectedRouter.put("/", updateCart);
+protectedRouter.delete("/", deleteCart);
 
 module.exports = router;
