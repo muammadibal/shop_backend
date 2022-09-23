@@ -13,10 +13,10 @@ const { withJWTAuthMiddleware } = require("express-kun");
 const protectedRouter = withJWTAuthMiddleware(router, process.env.JWT_SECRET);
 
 /* GET users listing. */
-protectedRouter.get("/all", getAllProduct);
-protectedRouter.get("/", getProduct);
-protectedRouter.post("/", createProduct);
-protectedRouter.put("/", updateProduct);
-protectedRouter.delete("/", deleteProduct);
+router.get("/all", auth, getAllProduct);
+router.get("/", auth, getProduct);
+router.post("/", auth, createProduct);
+router.put("/", auth, updateProduct);
+router.delete("/", auth, deleteProduct);
 
 module.exports = router;

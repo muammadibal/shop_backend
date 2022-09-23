@@ -23,7 +23,7 @@ const userSchema = new Schema(
     city: Number,
     zipCode: Number,
     resetPasswordToken: String,
-    resetPasswordToken: Date,
+    resetPasswordExpired: Date,
     userType: { type: String, default: "user" },
   },
   { timestamps: true }
