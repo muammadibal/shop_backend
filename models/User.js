@@ -9,22 +9,17 @@ const userSchema = new Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
+      unique: true
     },
     password: {
       type: String,
       min: [8, "Password min 8 characters"],
-      required: true,
+      required: true
     },
     username: String,
-    avatar: String,
-    address: String,
-    province: Number,
-    city: Number,
-    zipCode: Number,
     resetPasswordToken: String,
     resetPasswordExpired: Date,
-    userType: { type: String, default: "user" },
+    userType: { type: String, default: "user" }
   },
   { timestamps: true }
 );

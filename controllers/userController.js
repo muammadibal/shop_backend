@@ -1,267 +1,271 @@
 const User = require("../models/User");
+const Wallet = require("../models/UserWallet");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodeMailer = require("nodemailer");
 const randtoken = require("rand-token");
 
 module.exports = {
-    signIn: async (req, res, next) => {
-        const { email, password } = req.body;
+  signIn: async (req, res, next) => {
+    const { email, password } = req.body;
 
-        try {
-            if (email && password) {
-                const checkUser = await User.findOne({ email: email });
+    try {
+      if (email && password) {
+        const checkUser = await User.findOne({ email: email });
 
-                if (checkUser) {
-                    const checkPassword = await bcrypt.compare(
-                        password,
-                        checkUser.password
-                    );
+        if (checkUser) {
+          const checkPassword = await bcrypt.compare(
+            password,
+            checkUser.password
+          );
 
-                    if (checkPassword) {
-                        // delete checkUser.password
-                        checkUser.password = undefined;
+          if (checkPassword) {
+            // delete checkUser.password
+            checkUser.password = undefined;
 
-                        const token = jwt.sign(
-                            {
-                                user: checkUser,
-                            },
-                            process.env.JWT_SECRET
-                        );
+            const token = jwt.sign(
+              {
+                user: checkUser
+              },
+              process.env.JWT_SECRET
+            );
 
-                        res.json({
-                            message: "login success",
-                            data: token,
-                        });
-                    } else {
-                        res.json({
-                            message: "wrong password",
-                        });
-                    }
-                } else {
-                    res.json({
-                        message: "user not found",
-                    });
-                }
-            } else {
-                res.json({
-                    message: "email or password cannot be empty",
-                    data: null,
-                });
-            }
-        } catch (error) {
             res.json({
-                message: error?.message,
-                data: null,
+              message: "login success",
+              data: token
             });
-        }
-    },
-    signUp: async (req, res, next) => {
-        const { email, password } = req.body;
-        try {
-            const checkUser = await User.findOne({ email: email });
-
-            if (email && password) {
-                if (!checkUser) {
-                    const user = await User.create({
-                        email,
-                        password: bcrypt.hashSync(password, 10),
-                    });
-
-                    delete user._doc.password
-
-                    res.json({
-                        message: "reqister success",
-                        data: user,
-                    });
-                } else {
-                    res.json({
-                        message: "user already registered",
-                    });
-                }
-            } else {
-                res.json({
-                    message: "email or password cannot be empty",
-                    data: null,
-                });
-            }
-        } catch (error) {
+          } else {
             res.json({
-                message: error?.message,
-                data: null,
+              message: "wrong password"
             });
+          }
+        } else {
+          res.json({
+            message: "user not found"
+          });
         }
-    },
-    editUser: async (req, res, next) => {
-        const { email, oldPassword, newPassword } = req.body;
+      } else {
+        res.json({
+          message: "email or password cannot be empty",
+          data: null
+        });
+      }
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null
+      });
+    }
+  },
+  signUp: async (req, res, next) => {
+    const { email, password } = req.body;
+    try {
+      const checkUser = await User.findOne({ email: email });
+      if (email && password) {
+        if (!checkUser) {
+          const user = await User.create({
+            email,
+            password: bcrypt.hashSync(password, 10)
+          });
 
-        try {
-            if (email && oldPassword && newPassword) {
-                const checkUser = await User.findOne({ email: email });
+          await Wallet.create({
+            userId: user._id,
+            balance: 0
+          });
+          delete user._doc.password;
 
-                if (checkUser) {
-                    const checkPassword = await bcrypt.compare(
-                        oldPassword,
-                        checkUser.password
-                    );
+          res.json({
+            message: "reqister success",
+            data: user
+          });
+        } else {
+          res.json({
+            message: "user already registered"
+          });
+        }
+      } else {
+        res.json({
+          message: "email or password cannot be empty",
+          data: null
+        });
+      }
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null
+      });
+    }
+  },
+  editUser: async (req, res, next) => {
+    const { email, oldPassword, newPassword } = req.body;
 
-                    if (checkPassword) {
-                        const user = await User.findOneAndUpdate({
-                            email,
-                            password: bcrypt.hashSync(newPassword, 10),
-                        });
+    try {
+      if (email && oldPassword && newPassword) {
+        const checkUser = await User.findOne({ email: email });
 
-                        delete user._doc.password;
+        if (checkUser) {
+          const checkPassword = await bcrypt.compare(
+            oldPassword,
+            checkUser.password
+          );
 
-                        res.json({
-                            message: "update user success",
-                            data: user,
-                        });
-                    } else {
-                        res.json({
-                            message: "wrong password",
-                        });
-                    }
-                } else {
-                    res.json({
-                        message: "user not found",
-                    });
-                }
-            } else {
-                res.json({
-                    message: "email or password cannot be empty",
-                    data: null,
-                });
-            }
-        } catch (error) {
+          if (checkPassword) {
+            const user = await User.findOneAndUpdate({
+              email,
+              password: bcrypt.hashSync(newPassword, 10)
+            });
+
+            delete user._doc.password;
+
             res.json({
-                message: error?.message,
-                data: null,
+              message: "update user success",
+              data: user
             });
-        }
-    },
-    forgotPassword: async (req, res, next) => {
-        const { email } = req.body;
-
-        try {
-            if (email) {
-                const checkUser = await User.findOne({ email: email });
-
-                if (checkUser) {
-                    let token = randtoken.generate(20);
-                    checkUser.resetPasswordToken = token;
-                    checkUser.resetPasswordExpired = Date.now() + 3600000;
-                    checkUser.save();
-
-                    const smtpTransport = nodeMailer.createTransport("gmail", {
-                        auth: {
-                            user: process.env.MAILER_EMAIL,
-                            pass: process.env.MAILER_PASSW,
-                        },
-                    });
-
-                    const mailOptions = {
-                        to: checkUser.email,
-                        from: "shopbackend@mail.com",
-                        subject: "Node.js Password Reset",
-                        text:
-                            "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
-                            "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
-                            "http://" +
-                            req.headers.host +
-                            "/password-reset/" +
-                            token +
-                            "\n\n" +
-                            "If you did not request this, please ignore this email and your password will remain unchanged.\n",
-                    };
-
-                    smtpTransport.sendMail(mailOptions, function (err) {
-                        res.json({
-                            message: `An e-mail has been sent to ${checkUser.email} with further instructions.`,
-                        });
-                    });
-                } else {
-                    res.json({
-                        message: "user not found",
-                    });
-                }
-            } else {
-                res.json({
-                    message: "email or password cannot be empty",
-                    data: null,
-                });
-            }
-        } catch (error) {
+          } else {
             res.json({
-                message: error?.message,
-                data: null,
+              message: "wrong password"
             });
+          }
+        } else {
+          res.json({
+            message: "user not found"
+          });
         }
-    },
-    resetPassword: async (req, res, next) => {
-        try {
-            const user = await User.findOne({
-                resetPasswordToken: req.params.token,
-                resetPasswordExpires: { $gt: Date.now() },
-            });
+      } else {
+        res.json({
+          message: "email or password cannot be empty",
+          data: null
+        });
+      }
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null
+      });
+    }
+  },
+  forgotPassword: async (req, res, next) => {
+    const { email } = req.body;
 
-            if (user) {
-                delete user._doc.password;
-                delete user._doc.resetPasswordToken;
-                delete user._doc.resetPasswordExpired;
-                user.save();
+    try {
+      if (email) {
+        const checkUser = await User.findOne({ email: email });
 
-                res.json({
-                    message: "Reset your password",
-                    data: user,
-                });
-            } else {
-                res.json({
-                    message: "Password reset token is invalid or has expired.",
-                    data: null,
-                });
+        if (checkUser) {
+          let token = randtoken.generate(20);
+          checkUser.resetPasswordToken = token;
+          checkUser.resetPasswordExpired = Date.now() + 3600000;
+          checkUser.save();
+
+          const smtpTransport = nodeMailer.createTransport("gmail", {
+            auth: {
+              user: process.env.MAILER_EMAIL,
+              pass: process.env.MAILER_PASSW
             }
-        } catch (error) {
+          });
+
+          const mailOptions = {
+            to: checkUser.email,
+            from: "shopbackend@mail.com",
+            subject: "Node.js Password Reset",
+            text:
+              "You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n" +
+              "Please click on the following link, or paste this into your browser to complete the process:\n\n" +
+              "http://" +
+              req.headers.host +
+              "/password-reset/" +
+              token +
+              "\n\n" +
+              "If you did not request this, please ignore this email and your password will remain unchanged.\n"
+          };
+
+          smtpTransport.sendMail(mailOptions, function (err) {
             res.json({
-                message: error?.message,
-                data: null,
+              message: `An e-mail has been sent to ${checkUser.email} with further instructions.`
             });
+          });
+        } else {
+          res.json({
+            message: "user not found"
+          });
         }
-    },
-    updatePassword: async (req, res, next) => {
-        const { email, password } = req.body;
-        try {
-            if (email && password) {
-                const checkUser = await User.findOne({ email: email });
+      } else {
+        res.json({
+          message: "email or password cannot be empty",
+          data: null
+        });
+      }
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null
+      });
+    }
+  },
+  resetPassword: async (req, res, next) => {
+    try {
+      const user = await User.findOne({
+        resetPasswordToken: req.params.token,
+        resetPasswordExpires: { $gt: Date.now() }
+      });
 
-                if (checkUser) {
-                    const user = await User.findOneAndUpdate({
-                        email,
-                        password: bcrypt.hashSync(password, 10),
-                    });
+      if (user) {
+        delete user._doc.password;
+        delete user._doc.resetPasswordToken;
+        delete user._doc.resetPasswordExpired;
+        user.save();
 
-                    delete user._doc.password;
+        res.json({
+          message: "Reset your password",
+          data: user
+        });
+      } else {
+        res.json({
+          message: "Password reset token is invalid or has expired.",
+          data: null
+        });
+      }
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null
+      });
+    }
+  },
+  updatePassword: async (req, res, next) => {
+    const { email, password } = req.body;
+    try {
+      if (email && password) {
+        const checkUser = await User.findOne({ email: email });
 
-                    res.json({
-                        message: "update password success",
-                        data: user,
-                    });
-                } else {
-                    res.json({
-                        message: "user not found",
-                    });
-                }
-            } else {
-                res.json({
-                    message: "email or password cannot be empty",
-                    data: null,
-                });
-            }
-        } catch (error) {
-            res.json({
-                message: error?.message,
-                data: null,
-            });
+        if (checkUser) {
+          const user = await User.findOneAndUpdate({
+            email,
+            password: bcrypt.hashSync(password, 10)
+          });
+
+          delete user._doc.password;
+
+          res.json({
+            message: "update password success",
+            data: user
+          });
+        } else {
+          res.json({
+            message: "user not found"
+          });
         }
-    },
+      } else {
+        res.json({
+          message: "email or password cannot be empty",
+          data: null
+        });
+      }
+    } catch (error) {
+      res.json({
+        message: error?.message,
+        data: null
+      });
+    }
+  }
 };

@@ -6,16 +6,18 @@ const {
   getAllTransactionProduct,
   payTransactionProduct,
   shippingTransactionProduct,
-  finishTransactionProduct,
+  finishTransactionProduct
 } = require("../controllers/transactionProductController");
 var router = express.Router();
+const { withJWTAuthMiddleware } = require("express-kun");
+const protectedRouter = withJWTAuthMiddleware(router, process.env.JWT_SECRET);
 
-router.get("/all", getAllTransactionProduct);
-router.get("/", getTransactionProduct);
-router.post("/", createTransactionProduct);
-router.put("/pay", payTransactionProduct);
-router.put("/shipping", shippingTransactionProduct);
-router.put("/finish", finishTransactionProduct);
-router.delete("/", deleteTransactionProduct);
+protectedRouter.get("/all", getAllTransactionProduct);
+protectedRouter.get("/", getTransactionProduct);
+protectedRouter.post("/", createTransactionProduct);
+protectedRouter.put("/pay", payTransactionProduct);
+protectedRouter.put("/shipping", shippingTransactionProduct);
+protectedRouter.put("/finish", finishTransactionProduct);
+protectedRouter.delete("/", deleteTransactionProduct);
 
 module.exports = router;

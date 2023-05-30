@@ -8,7 +8,7 @@ const productSchema = new Schema(
       type: "ObjectId",
       ref: "ProductCategory",
       required: true,
-      default: "",
+      default: ""
     },
     title: { type: String, required: true },
     description: { type: String, required: true },
@@ -18,7 +18,7 @@ const productSchema = new Schema(
     stock: { type: Number, required: true, default: 1 },
     discountType: { type: String, default: "disable" },
     discountAmount: { type: Number, default: 0 },
-    selled: { type: Number, required: true, default: 0 },
+    selled: { type: Number, required: true, default: 0 }
   },
   { timestamps: true }
 );
